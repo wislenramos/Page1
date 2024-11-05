@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Entry</title>
+</head>
+<body>
+    <h1>Add Personal Details</h1>
+    <form id="add-entry-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="address">Address:</label>
+        <input type="text" id="address" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" required>
+
+        <button type="submit">Add Entry</button>
+    </form>
+
+    <h2>Saved Entries</h2>
+    <div id="entries-list"></div>
+
+    <script>
+        // Function to save entry to localStorage
+        function saveEntry(entries) {
+            localStorage.setItem('entries', JSON.stringify(entries));
+        }
+
+        // Function to delete an entry from localStorage
+        function deleteEntry(index) {
+            const entries = JSON.parse(localStorage.getItem('entries')) || [];
+            entries.splice(index, 1); // Remove the entry at the given index
+            saveEntry(entries);
+            displayEntries(); // Re-render the list
+        }
+
+        // Function to update an entry in localStorage
+        function updateEntry(index) {
+            const entries = JSON.parse(localStorage.getItem('entries')) || [];
+            const entry = entries[index];
+
+            // Populate the form with the current entry data
+            document.getElementById('name').value = entry.name;
+            document.getElementById('address').value = entry.address;
+            document.getElementById('email').value = entry.email;
+            document.getElementById('phone').value = entry.phone;
+
+            // Change the form submit button to an "Update" button
+            const submitButton = document.querySelector('form button');
+            submitButton.textContent = 'Update Entry';
+            submitButton.onclick = function (e) {
+                e.preventDefault();
+
+                // Update the entry with the new form values
+                const updatedEntry = {
+                    name: document.getElementById('name').value,
+                    address: document.getElementById('address').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                };
+
+                // Replace the old entry with the updated one
+                entries[index] = updatedEntry;
+                saveEntry(entries);
+
+                // Reset the form and revert the button text to "Add Entry"
+                document.getElementById('add-entry-form').reset();
+                submitButton.textContent = 'Add Entry';
+                submitButton.onclick = function (e) {
+                    e.preventDefault();
+                    const newEntry = {
+                        name: document.getElementById('name').value,
+                        address: document.getElementById('address').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value,
+                    };
+                    const entries = JSON.parse(localStorage.getItem('entries')) || [];
+                    entries.push(newEntry);
+                    saveEntry(entries);
+                    document.getElementById('add-entry-form').reset();
+                    displayEntries();
+                };
+
+                displayEntries(); // Re-render the list with updated entries
+            };
+        }
+
+        // Function to display saved entries
+        function displayEntries() {
+            const entries = JSON.parse(localStorage.getItem('entries')) || [];
+            const entriesList = document.getElementById('entries-list');
+            entriesList.innerHTML = '';  // Clear current list
+
+            entries.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.classList.add('entry');
+                entryDiv.innerHTML = `
+                    <p><strong>Name:</strong> ${entry.name}</p>
+                    <p><strong>Address:</strong> ${entry.address}</p>
+                    <p><strong>Email:</strong> ${entry.email}</p>
+                    <p><strong>Phone:</strong> ${entry.phone}</p>
+                    <button onclick="updateEntry(${index})">Update</button>
+                    <button onclick="deleteEntry(${index})">Delete</button>
+                    <hr>
+                `;
+                entriesList.appendChild(entryDiv);
+            });
+        }
+
+        // Add entry when form is submitted
+        document.getElementById('add-entry-form').onsubmit = function (e) {
+            e.preventDefault();
+
+            // Create a new entry object from the form fields
+            const newEntry = {
+                name: document.getElementById('name').value,
+                address: document.getElementById('address').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+            };
+
+            // Get the existing entries from localStorage
+            const entries = JSON.parse(localStorage.getItem('entries')) || [];
+
+            // Add the new entry to the array and save it
+            entries.push(newEntry);
+            saveEntry(entries);
+
+            // Optionally reset the form
+            document.getElementById('add-entry-form').reset();
+
+            // Display updated list of entries
+            displayEntries();
+        };
+
+        // Display entries when the page loads
+        window.onload = function () {
+            displayEntries();
+        };
+    </script>
+</body>
+</html>
